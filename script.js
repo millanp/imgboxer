@@ -354,8 +354,8 @@ $(document).ready(function () {
             view.applyRectModifiers();
         },
         addRectCenteredAt: function (x, y, radius) {
-            var trueLeft = x - radius;
-            var trueTop = y - radius;
+            var trueLeft = Math.max(selectorImage.offsetLeft, x - radius);
+            var trueTop = Math.max(selectorImage.offsetTop, y - radius);
             var trueWidth = Math.min(selectorImage.offsetLeft + selectorImage.width - trueLeft, radius * 2);
             var trueHeight = Math.min(selectorImage.offsetTop + selectorImage.height - trueTop, radius * 2);
             view.drawAndFocusRect(trueLeft, trueTop, trueWidth, trueHeight);
