@@ -356,8 +356,8 @@ $(document).ready(function () {
         addRectCenteredAt: function (x, y, radius) {
             var trueLeft = x - radius;
             var trueTop = y - radius;
-            var trueWidth = Math.min(selectorImage.offsetLeft + selectorImage.width - trueLeft, radius*2);
-            var trueHeight = Math.min(selectorImage.offsetTop + selectorImage.height - trueTop, radius*2);
+            var trueWidth = Math.min(selectorImage.offsetLeft + selectorImage.width - trueLeft, radius * 2);
+            var trueHeight = Math.min(selectorImage.offsetTop + selectorImage.height - trueTop, radius * 2);
             view.drawAndFocusRect(trueLeft, trueTop, trueWidth, trueHeight);
         },
         drawAndFocusRect: function (x, y, width, height) {
@@ -476,21 +476,22 @@ $(document).ready(function () {
                 console.log('imaging');
                 if (controller.rectsForImg(n))
                     for (var i = 0, rects = controller.rectsForImg(n); i < rects.length; i++) {
-                        var thumbnail = $('<div class="thumbnail" data-tooltip="No tags set"></div>');
-                        thumbnail.attr('data-imgid', n);
-                        thumbnail.attr('data-rectid', i);
-                        thumbnail.css({
-                            'height': rects[i].realHeight * 2,
-                            'width': rects[i].realWidth * 2
-                        });
-                        grid.append(thumbnail);
-                        thumbnail.css('background-image', u.cssURL(rects[i].url));
+                        if (rects[i].url) {
+                            var thumbnail = $('<div class="thumbnail" data-tooltip="No tags set"></div>');
+                            thumbnail.attr('data-imgid', n);
+                            thumbnail.attr('data-rectid', i);
+                            thumbnail.css({
+                                'height': rects[i].realHeight * 2,
+                                'width': rects[i].realWidth * 2
+                            });
+                            grid.append(thumbnail);
+                            thumbnail.css('background-image', u.cssURL(rects[i].url));
+                        }
                     }
             }
             var tagList = $('.tag-list');
             tagList.empty();
             controller.getTagSet().forEach(function (tag, id) {
-                console.log(tag);
                 var tagSpan = $('<button class="btn btn-default tag-btn"></button>');
                 tagSpan.text(id + 1 + ": " + tag);
                 tagSpan.attr('data-tagid', id);
@@ -593,7 +594,7 @@ $(document).ready(function () {
             this.imageCount = n;
         },
         startInitBuffer: function (n) {
-            for (var i = n - buffer, j = 0; i < n + buffer; i++, j++) {
+            for (var i = n - buffer, j = 0; i < n + buffer; i++ , j++) {
                 if (model.getFile(i)) {
                     this.fileWindow.push(model.getFile(i));
                 }
@@ -618,7 +619,7 @@ $(document).ready(function () {
             var path = model.getCurrentImage();
             console.log('path is ' + path);
             var n;
-            for (var i = 0, file = model.getFile(i); i < controller.imageCount; i++, file = model.getFile(i)) {
+            for (var i = 0, file = model.getFile(i); i < controller.imageCount; i++ , file = model.getFile(i)) {
                 if (file.webkitRelativePath === path) {
                     console.log(file.webkitRelativePath);
                     n = i;
