@@ -1,0 +1,23 @@
+{
+  "name": "imgboxer",
+  "version": "1.0.0",
+  "description": "tool to highlight and tag sections of images",
+  "main": "script.js",
+  "dependencies": {},
+  "devDependencies": {
+    "typings": "^2.1.0"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/millanp/imgboxer.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/millanp/imgboxer/issues"
+  },
+  "homepage": "https://github.com/millanp/imgboxer#readme"
+}
