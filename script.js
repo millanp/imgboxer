@@ -1,166 +1,140 @@
-/// <reference path="typings/globals/jquery/index.d.ts" />
-$(document).ready(function () {
-    // noprotect
-    // TODO start where left off, image label
+$(document).ready(function() {
+    // Shortcut selectors
     var $f = $('#dirSelectorForm');
     var selectorImage = $('#selectorImage')[0];
-    var el = document.getElementById;
-    var imgDimensions = [600, 600];
+    // Constants
     var defaultSquareRadius = 20;
     var radiusResizeIncrement = 10;
     // Change this to a non-hidden file for easier access
     var labelsFileName = '.labels';
     var tagsHaveLoaded = false;
-    var buffer = 5; // Images before and after currently viewed one to store in memory
-    function range(end) {
-        var result = [];
-        for (var i = 0; i < end; i++)
-            result[i] = i;
-        return result;
-    }
+    var buffer = 5; // Images before and after the one currently viewed to store in memory
+
     var model = {
-        dataURLs: { imageCount: 0 },
+        /*
+        webkitRelativePaths are strings
+
+        DATA FORMAT:
+        {
+            imageCount: n,
+            currentImage: 0 or webkitRelativePath,
+            "n": {
+                name: webkitRelativePath,
+                rects: [
+                    {
+                        "top": 
+                    }
+                ]
+            }
+        }
+        */
+        data: {
+            imageCount: 0,
+            currentImage: 0
+        },
         tags: [],
         pathToFileMap: {},
         loadedSoFar: 0,
-        init: function () {
+        init: function() {
             console.log(model.loadedSoFar);
         },
-        get: function () {
-            return this.dataURLs;
+        get: function() {
+            return this.data;
         },
-        set: function (newData) {
-            this.dataURLs = newData;
+        set: function(newData) {
+            this.data = newData;
         },
-        assocNameToFile: function (name, file) {
+        assocNameToFile: function(name, file) {
             this.pathToFileMap[name] = file;
         },
-        setCurrentImage: function (path) {
-            this.dataURLs.currentImage = path;
+        setCurrentImage: function(path) {
+            this.data.currentImage = path;
         },
-        getCurrentImage: function () {
-            if (!this.dataURLs.currentImage) {
-                this.dataURLs.currentImage = this.dataURLs[0].name;
+        getCurrentImage: function() {
+            if (!this.data.currentImage) {
+                this.data.currentImage = this.data[0].name;
             }
-            return this.dataURLs.currentImage;
+            return this.data.currentImage;
         },
-        getURL: function (n) {
+        getURL: function(n) {
             return this.get()[n].url;
         },
-        getFile: function (n) {
+        getFile: function(n) {
             try {
                 var name = this.get()[n].name;
                 return this.pathToFileMap[name];
-            }
-            catch (e) {
+            } catch (e) {
                 return null;
             }
         },
-        getLoadedSoFar: function () {
+        getLoadedSoFar: function() {
             return model.loadedSoFar;
         },
-        addTagToImgRect: function (tagId, imgId, rectId) {
-            model.dataURLs[imgId].rects[rectId].tag = model.getTagString(tagId);
+        addTagToImgRect: function(tagId, imgId, rectId) {
+            model.data[imgId].rects[rectId].tag = model.getTagString(tagId);
         },
-        setURL: function (url, n, imageCount) {
+        setFile: function(file, n, imageCount) {
             model.loadedSoFar++;
-            this.dataURLs[n] = { url: url, rects: [] };
-            this.dataURLs.imageCount = imageCount;
+            this.data[n] = {
+                file: file,
+                rects: []
+            };
+            this.data.imageCount++;
         },
-        setFile: function (file, n, imageCount) {
-            model.loadedSoFar++;
-            this.dataURLs[n] = { file: file, rects: [] };
-            this.dataURLs.imageCount++;
-        },
-        getName: function (n) {
+        getName: function(n) {
             return this.get()[n].name;
         },
-        setName: function (name, n) {
+        initImgWithName: function(name, n) {
             model.loadedSoFar++;
-            this.get()[n] = { name: name, rects: [] };
-            this.dataURLs.imageCount++;
+            this.get()[n] = {
+                name: name,
+                rects: []
+            };
+            this.data.imageCount++;
         },
-        setRect: function (n, trueRect) {
-            if (!this.dataURLs[n])
-                this.dataURLs[n] = { rects: trueRect };
+        setRect: function(n, trueRect) {
+            if (!this.data[n])
+                this.data[n] = {
+                    rects: trueRect
+                };
             else
-                this.dataURLs[n].rects = trueRect;
+                this.data[n].rects = trueRect;
         },
-        writeTagSet: function (tagSet) {
+        writeTagSet: function(tagSet) {
             this.tags = tagSet;
         },
-        getTagSet: function () {
+        getTagSet: function() {
             return this.tags;
         },
-        getTagString: function (tagId) {
+        getTagString: function(tagId) {
             return this.tags[tagId];
         },
-        getLength: function () {
-            return this.dataURLs.imageCount;
+        getLength: function() {
+            return this.data.imageCount;
         }
     };
     var view; // Current view
     var filepickingView = {
         panel: $('filepicking-panel'),
-        init: function () {
+        init: function() {
             this.panel.css('display', 'block');
             this.bindEvents();
         },
-        bindEvents: function () {
-            $('#files').change(function () {
+        bindEvents: function() {
+            $('#files').change(function() {
                 var vanillaObj = this;
                 $('#files-filecount').text(vanillaObj.files.length + " files selected");
             });
-            $('#json-selector').change(function () {
+            $('#json-selector').change(function() {
                 var vanillaObj = this;
                 $('#json-selector-filecount').text(vanillaObj.files.length + " file selected");
             });
-            $f.submit(function (e) {
+            $f.submit(function(e) {
                 e.preventDefault();
-                var fileList = document.getElementById('files').files;
-                var jsonDataFile = document.getElementById('json-selector').files[0];
-                var imageList = [];
-                var fl = fileList.length;
-                controller.writeTagSet([]);
-                var file;
-                // This should be in the controller
-                for (var i = 0; i < fl; i++) {
-                    file = fileList[i];
-                    var reader = new FileReader();
-                    if (file.name == labelsFileName) {
-                        console.log('encountered labels');
-                        reader.onload = function (e) {
-                            var trimmed = $.trim(e.target.result);
-                            var tags = trimmed.split('\n');
-                            console.log('writing tags ' + tags);
-                            controller.writeTagSet(tags);
-                            tagsHaveLoaded = true;
-                        };
-                        reader.readAsText(file);
-                    }
-                    else {
-                        imageList.push(file);
-                    }
-                }
-                controller.setImageCount(imageList.length);
-                for (var j = 0; j < imageList.length; j++) {
-                    file = imageList[j];
-                    controller.addImgAssoc(file, j, file.webkitRelativePath);
-                }
-                try {
-                    controller.readJsonFile(jsonDataFile);
-                }
-                catch (e) {
-                    for (var i = 0; i < imageList.length; i++) {
-                        file = imageList[i];
-                        controller.addImg(file.webkitRelativePath, i);
-                    }
-                    controller.switchToView(highlightView);
-                }
-                //         controller.switchToView(highlightView);
+                controller.switchToHighlight();
             });
         },
-        deinit: function () {
+        deinit: function() {
             this.panel.css('display', 'none');
         }
     };
@@ -168,7 +142,7 @@ $(document).ready(function () {
         currImage: 0,
         initialized: false,
         panel: $('highlighting-panel'),
-        init: function () {
+        init: function() {
             this.panel.css('display', 'block');
             view.applyRectModifiers();
             if (!controller.bufferLoaded) {
@@ -179,8 +153,8 @@ $(document).ready(function () {
                 this.initialized = true;
             }
         },
-        bindEvents: function () {
-            $('#nextButton').click(function (event) {
+        bindEvents: function() {
+            $('#nextButton').click(function(event) {
                 controller.storeRect(view.currImage);
                 view.resetAllRects(true);
                 if (view.currImage + 1 < controller.getLength()) {
@@ -190,10 +164,10 @@ $(document).ready(function () {
                     controller.shiftWindow(1);
                 }
             });
-            $(window).resize(function () {
+            $(window).resize(function() {
                 view.setRects();
             });
-            $('#prevButton').click(function (event) {
+            $('#prevButton').click(function(event) {
                 controller.storeRect(view.currImage);
                 if (view.currImage - 1 >= 0) {
                     view.currImage--;
@@ -202,26 +176,28 @@ $(document).ready(function () {
                     controller.shiftWindow(-1);
                 }
             });
-            $('#classifyButton').click(function (event) {
+            $('#classifyButton').click(function(event) {
                 controller.storeRect(view.currImage);
                 controller.switchToView(classifyView);
             });
-            $('#addRectButton').click(function (event) {
+            $('#addRectButton').click(function(event) {
                 controller.addRect();
             });
-            $('#getDownloadLink').click(function (event) {
+            $('#getDownloadLink').click(function(event) {
                 controller.showDownloadLink();
             });
-            $('#selectorImage').click(function (event) {
+            $('#selectorImage').click(function(event) {
                 view.addRectCenteredAt(event.pageX, event.pageY, defaultSquareRadius);
             });
-            $(document).keydown(function (event) {
+            $(document).keydown(function(event) {
                 function subtractRadius(ind, val) {
                     return parseFloat(val) - radiusResizeIncrement;
                 }
+
                 function subtract2Radius(ind, val) {
                     return subtractRadius(0, subtractRadius(ind, val));
                 }
+
                 function subPos(ind, coords) {
                     var newCoords = {
                         top: coords.top - radiusResizeIncrement,
@@ -234,12 +210,14 @@ $(document).ready(function () {
                         newCoords.left = imgCoords.left;
                     return newCoords;
                 }
+
                 function addPos(ind, coords) {
                     return {
                         top: coords.top + radiusResizeIncrement,
                         left: coords.left + radiusResizeIncrement
                     };
                 }
+
                 function addWidth(ind, width) {
                     // Square has already been shifted in position
                     width = parseFloat(width);
@@ -251,6 +229,7 @@ $(document).ready(function () {
                     }
                     return newWidth;
                 }
+
                 function addHeight(ind, height) {
                     height = parseFloat(height);
                     // Square has already been shifted in position
@@ -262,9 +241,11 @@ $(document).ready(function () {
                     }
                     return newHeight;
                 }
+
                 function addRadius(ind, val) {
                     return parseFloat(val) + radiusResizeIncrement;
                 }
+
                 function add2Radius(ind, val) {
                     return addRadius(0, addRadius(ind, val));
                 }
@@ -295,14 +276,14 @@ $(document).ready(function () {
                         break;
                 }
             });
-            $('.selection-square').dblclick(function (event) {
+            $('.selection-square').dblclick(function(event) {
                 this.remove();
             });
         },
-        deinit: function () {
+        deinit: function() {
             this.panel.hide();
         },
-        dataUrlOfCrop: function (rect) {
+        dataUrlOfCrop: function(rect) {
             var cvv = $('#cropper')[0];
             var img = $('#selectorImage')[0];
             cvv.width = rect.width;
@@ -311,10 +292,10 @@ $(document).ready(function () {
             cv.drawImage(img, rect.left, rect.top, rect.width, rect.height, 0, 0, cvv.width, cvv.height);
             return cvv.toDataURL();
         },
-        getRects: function () {
+        getRects: function() {
             var $sqs = $('.selection-square');
             var rects = [];
-            $sqs.each(function (i) {
+            $sqs.each(function(i) {
                 var $sq = $(this);
                 var pos = $sq.offset();
                 pos.left = view.rx(pos.left);
@@ -333,7 +314,7 @@ $(document).ready(function () {
             return rects;
 
         },
-        setRects: function () {
+        setRects: function() {
             view.resetAllRects(true);
             var imgObj = controller.getImageObject(view.currImage);
             var panel = $('highlighting-panel');
@@ -350,17 +331,17 @@ $(document).ready(function () {
                     });
                     panel.prepend(newRect);
                 }
-            console.log('setName');
+            console.log('initImgWithName');
             view.applyRectModifiers();
         },
-        addRectCenteredAt: function (x, y, radius) {
+        addRectCenteredAt: function(x, y, radius) {
             var trueLeft = Math.max(selectorImage.offsetLeft, x - radius);
             var trueTop = Math.max(selectorImage.offsetTop, y - radius);
             var trueWidth = Math.min(selectorImage.offsetLeft + selectorImage.width - trueLeft, radius * 2);
             var trueHeight = Math.min(selectorImage.offsetTop + selectorImage.height - trueTop, radius * 2);
             view.drawAndFocusRect(trueLeft, trueTop, trueWidth, trueHeight);
         },
-        drawAndFocusRect: function (x, y, width, height) {
+        drawAndFocusRect: function(x, y, width, height) {
             var toPrepend = $('<div class="selection-square"></div>');
             toPrepend.css({
                 'width': width,
@@ -369,17 +350,17 @@ $(document).ready(function () {
                 'left': x
             });
             $('highlighting-panel').prepend(toPrepend);
-            setTimeout(function () {
+            setTimeout(function() {
                 toPrepend.get(0).focus();
             }, 10);
             console.log('fous');
             view.applyRectModifiers();
         },
-        showDownloadLink: function (url) {
+        showDownloadLink: function(url) {
             $('#downloadLink').attr('href', url);
             $('#downloadLink').show();
         },
-        render: function (dir) {
+        render: function(dir) {
             var _ = controller.getURL(dir);
             var path = _[1];
             var url = _[0];
@@ -388,68 +369,69 @@ $(document).ready(function () {
             console.log('render');
             view.setRects();
         },
-        rx: function (x) {
+        rx: function(x) {
             return x - selectorImage.offsetLeft;
         },
-        ry: function (y) {
+        ry: function(y) {
             console.log('using scrollTop');
             return y - selectorImage.offsetTop;
         },
-        trueX: function (x) {
+        trueX: function(x) {
             return x + selectorImage.offsetLeft;
         },
-        trueY: function (y) {
+        trueY: function(y) {
             return y + selectorImage.offsetTop;
         },
-        realToScaledX: function (dim) {
+        realToScaledX: function(dim) {
             return dim * selectorImage.width / selectorImage.naturalWidth;
         },
-        scaledToRealX: function (dim) {
+        scaledToRealX: function(dim) {
             return dim * selectorImage.naturalWidth / selectorImage.width;
         },
-        realToScaledY: function (dim) {
+        realToScaledY: function(dim) {
             return dim * selectorImage.height / selectorImage.naturalHeight;
         },
-        scaledToRealY: function (dim) {
+        scaledToRealY: function(dim) {
             return dim * selectorImage.naturalHeight / selectorImage.height;
         },
-        storedToTrueX: function (dim) {
+        storedToTrueX: function(dim) {
             return view.trueX(view.realToScaledX(dim));
         },
-        storedToTrueY: function (dim) {
+        storedToTrueY: function(dim) {
             return view.trueY(view.realToScaledY(dim));
         },
-        addRect: function () {
+        addRect: function() {
             $('highlighting-panel').prepend('<div class="selection-square"></div>');
             view.applyRectModifiers();
         },
-        applyRectModifiers: function () {
+        applyRectModifiers: function() {
             $('.selection-square').draggable({
-                stop: function () { controller.storeRect(view.currImage); },
-                drag: function (event, ui) {
+                stop: function() {
+                    controller.storeRect(view.currImage);
+                },
+                drag: function(event, ui) {
                     var imgRight = selectorImage.offsetLeft + selectorImage.width;
                     var imgBottom = selectorImage.offsetTop + selectorImage.height;
                     ui.position.left = Math.min(imgRight - parseFloat($(this).css('width')), Math.max(selectorImage.offsetLeft, ui.offset.left));
                     ui.position.top = Math.min(imgBottom - parseFloat($(this).css('height')), Math.max(selectorImage.offsetTop, ui.offset.top));
                 }
             }).resizable({
-                resize: function (event, ui) {
+                resize: function(event, ui) {
                     var imgRight = selectorImage.offsetLeft + selectorImage.width;
                     var imgBottom = selectorImage.offsetTop + selectorImage.height;
                     ui.size.width = Math.min(imgRight - this.offsetLeft, ui.size.width);
                     ui.size.height = Math.min(imgBottom - this.offsetTop, ui.size.height);
                 }
-            }).resize(function (event) {
+            }).resize(function(event) {
                 event.stopPropagation();
-            });
-            ;
-            $('.selection-square').dblclick(function (event) {
+            });;
+            $('.selection-square').dblclick(function(event) {
                 this.remove();
             });
             $('.selection-square').attr('tabindex', '-1');
         },
-        resetAllRects: function (noAdd) {
-            $('.selection-square').each(function (index) {
+        resetAllRects: function(noAdd) {
+            $('.selection-square').each(function(index) {
                 $(this).remove();
             });
             if (!noAdd)
@@ -458,18 +440,18 @@ $(document).ready(function () {
     };
     var classifyView = {
         panel: $('classify-panel'),
-        init: function () {
+        init: function() {
             this.panel.css('display', 'block');
             console.log('rendering');
             this.render();
             this.applyModifiers();
             this.applyEventHandlers();
         },
-        deinit: function () {
+        deinit: function() {
             this.panel.css('display', 'none');
             $(document).off("keypress");
         },
-        render: function () {
+        render: function() {
             var grid = $('.image-grid');
             grid.empty();
             for (var n = 0; n < controller.getLength(); n++) {
@@ -491,7 +473,7 @@ $(document).ready(function () {
             }
             var tagList = $('.tag-list');
             tagList.empty();
-            controller.getTagSet().forEach(function (tag, id) {
+            controller.getTagSet().forEach(function(tag, id) {
                 var tagSpan = $('<button class="btn btn-default tag-btn"></button>');
                 tagSpan.text(id + 1 + ": " + tag);
                 tagSpan.attr('data-tagid', id);
@@ -500,16 +482,16 @@ $(document).ready(function () {
                 tagSpan.css('background-color', u.getColor(id));
             });
         },
-        realToScaledX: function (x) {
+        realToScaledX: function(x) {
             return $('.image-grid').attr('width') / 10;
         },
-        getThumb: function (id) {
+        getThumb: function(id) {
             return $('.thumb[data-imgid=' + id + ']');
         },
-        getBtn: function (id) {
+        getBtn: function(id) {
             return $('.btn[data-tagid=' + id + ']');
         },
-        addTagToThumbnail: function (tagElem, thumbElem) {
+        addTagToThumbnail: function(tagElem, thumbElem) {
             //     var newTitle = thumbElem.attr('data-tooltip') + tagElem[0].outerHTML;
             //     console.log('new title '+newTitle);
             //     thumbElem.attr('data-tooltip', newTitle);
@@ -517,32 +499,32 @@ $(document).ready(function () {
             thumbElem.remove();
             //     Eventually make this add HTML to display tag BADGE, not just text
         },
-        tagSelected: function (tagElem) {
-            $('.ui-selected').each(function () {
+        tagSelected: function(tagElem) {
+            $('.ui-selected').each(function() {
                 controller.applyTagToThumbnail(tagElem, $(this));
             });
         },
-        applyModifiers: function () {
+        applyModifiers: function() {
             $.widget("ui.tooltip", $.ui.tooltip, {
                 options: {
-                    content: function () {
+                    content: function() {
                         return $(this).attr('data-tooltip');
                     }
                 }
             });
             $('.image-grid').selectable();
-            $('.thumbnail').each(function () {
+            $('.thumbnail').each(function() {
                 $(this).tooltip();
             });
         },
-        applyEventHandlers: function () {
-            $('.tag-btn').click(function (event) {
+        applyEventHandlers: function() {
+            $('.tag-btn').click(function(event) {
                 view.tagSelected($(this));
             });
-            $('#boxButton').click(function (event) {
+            $('#boxButton').click(function(event) {
                 controller.switchToView(highlightView);
             });
-            $(document).keypress(function (event) {
+            $(document).keypress(function(event) {
                 console.log('key press');
                 var number = String.fromCharCode(event.which);
                 view.getBtn(number - 1).click();
@@ -558,10 +540,10 @@ $(document).ready(function () {
             "2F6213", "2F6309", "5F6B02", "875509", "8C500B", "754916", "6B3304",
             "5B123B", "42104A", "113F47", "333333", "0F4B38", "856508", "711616",
         ],
-        cssURL: function (url) {
+        cssURL: function(url) {
             return 'url(' + url + ')';
         },
-        getRandomColor: function () {
+        getRandomColor: function() {
             // 30 random hues with step of 12 degrees
             var hue = Math.floor(Math.random() * 30) * 12;
             return $.Color({
@@ -571,7 +553,7 @@ $(document).ready(function () {
                 alpha: 1
             }).toHexString();
         },
-        getColor: function (n) {
+        getColor: function(n) {
             return '#' + u.COLORS[n];
         }
     };
@@ -582,23 +564,22 @@ $(document).ready(function () {
         fileWindow: [],
         bufferLoaded: false,
         bufferCenterModelId: 0,
-        init: function () {
+        init: function() {
             view = filepickingView;
             model.init();
             view.init();
         },
-        setCurrentImage: function (n) {
+        setCurrentImage: function(n) {
             model.setCurrentImage(n);
         },
-        setImageCount: function (n) {
+        setImageCount: function(n) {
             this.imageCount = n;
         },
-        startInitBuffer: function (n) {
-            for (var i = n - buffer, j = 0; i < n + buffer; i++ , j++) {
+        startBufferAt: function(n) {
+            for (var i = n - buffer, j = 0; i < n + buffer; i++, j++) {
                 if (model.getFile(i)) {
                     this.fileWindow.push(model.getFile(i));
-                }
-                else {
+                } else {
                     this.fileWindow.push(null);
                 }
             }
@@ -608,63 +589,100 @@ $(document).ready(function () {
                     var fr = new FileReader();
                     fr.onload = controller.addToMapGenerator(file);
                     fr.readAsDataURL(file);
-                }
-                else {
+                } else {
                     controller.fileToUrlMap[null] = null;
                 }
             }
             this.bufferLoaded = true;
         },
-        startBuffer: function () {
+        startBuffer: function() {
             var path = model.getCurrentImage();
-            console.log('path is ' + path);
             var n;
-            for (var i = 0, file = model.getFile(i); i < controller.imageCount; i++ , file = model.getFile(i)) {
+            for (var i = 0, file = model.getFile(i); i < controller.imageCount; i++, file = model.getFile(i)) {
                 if (file.webkitRelativePath === path) {
                     console.log(file.webkitRelativePath);
                     n = i;
+                    break;
                 }
             }
-            this.startInitBuffer(n);
+            this.startBufferAt(n);
         },
-        switchToView: function (newView) {
+        switchToHighlight: function() {
+            var fileList = document.getElementById('files').files;
+            var jsonDataFile = document.getElementById('json-selector').files[0];
+            var imageList = [];
+            var fl = fileList.length;
+            controller.writeTagSet([]);
+            var file;
+            // This should be in the controller
+            for (var i = 0; i < fl; i++) {
+                file = fileList[i];
+                var reader = new FileReader();
+                if (file.name == labelsFileName) {
+                    reader.onload = function(e) {
+                        var trimmed = $.trim(e.target.result);
+                        var tags = trimmed.split('\n');
+                        controller.writeTagSet(tags);
+                    };
+                    reader.readAsText(file);
+                } else {
+                    imageList.push(file);
+                }
+            }
+            controller.setImageCount(imageList.length);
+            for (var j = 0; j < imageList.length; j++) {
+                file = imageList[j];
+                controller.addImgAssoc(file, j, file.webkitRelativePath);
+            }
+            try {
+                controller.readJsonFileThenHighlight(jsonDataFile);
+            } catch (e) {
+                for (var i = 0; i < imageList.length; i++) {
+                    file = imageList[i];
+                    controller.addImg(file.webkitRelativePath, i);
+                }
+                controller.switchToView(highlightView);
+            }
+        },
+        switchToView: function(newView) {
             view.deinit();
             view = newView;
             newView.init();
         },
-        getURL: function (dir) {
+        getURL: function(dir) {
             var path = this.fileWindow[buffer + dir].webkitRelativePath;
             return [this.fileToUrlMap[path],
-                path];
+                path
+            ];
         },
-        addToMapGenerator: function (file) {
-            return function (e) {
+        addToMapGenerator: function(file) {
+            return function(e) {
                 controller.fileToUrlMap[file.webkitRelativePath] = e.target.result;
             };
         },
-        writeDataURLsGenerator: function (ctx) {
-            return function (e) {
+        dataGenerator: function(ctx) {
+            return function(e) {
                 var newData = JSON.parse(e.target.result);
                 model.set(newData);
                 console.log(model.get());
                 controller.switchToView(highlightView);
             };
         },
-        readToMap: function (file) {
+        readToMap: function(file) {
             var fr = new FileReader();
             fr.onload = this.addToMapGenerator(file);
             fr.readAsDataURL(file);
         },
-        readJsonFile: function (file) {
+        readJsonFileThenHighlight: function(file) {
             var fr = new FileReader();
-            fr.onload = this.writeDataURLsGenerator();
+            fr.onload = this.dataGenerator();
             fr.readAsText(file);
         },
-        shiftCurrentImage: function (dir) {
-            // Update model.dataURLs.currentImage;
+        shiftCurrentImage: function(dir) {
+            // Update model.data.currentImage;
             this.setCurrentImage(this.fileWindow[buffer + dir].webkitRelativePath);
         },
-        shiftWindow: function (dir) {
+        shiftWindow: function(dir) {
             var fl;
             var first;
             if (dir > 0) {
@@ -677,8 +695,7 @@ $(document).ready(function () {
                 first = this.fileWindow.shift();
                 if (first)
                     delete this.fileToUrlMap[first.webkitRelativePath];
-            }
-            else if (dir < 0) {
+            } else if (dir < 0) {
                 fl = model.getFile(this.bufferCenterModelId - buffer - 1);
                 this.fileWindow.unshift(fl);
                 if (fl)
@@ -689,36 +706,29 @@ $(document).ready(function () {
                     delete this.fileToUrlMap[first.webkitRelativePath];
             }
         },
-        getNextURL: function (dir) {
+        getNextURL: function(dir) {
             this.shiftWindow(dir);
             return this.getURL();
         },
-        addURL: function (url, n, totalExpected, name) {
-            model.setURL(url, n, totalExpected);
-            model.setName(name, n);
-            if (model.getLoadedSoFar() == totalExpected) {
-                return true; // for processDone
-            }
-        },
-        addImgAssoc: function (file, n, name) {
+        addImgAssoc: function(file, n, name) {
             model.assocNameToFile(name, file);
         },
-        addImg: function (name, n) {
-            model.setName(name, n);
+        addImg: function(name, n) {
+            model.initImgWithName(name, n);
         },
-        getImageObject: function (n) {
+        getImageObject: function(n) {
             return model.get()[n];
         },
-        getLength: function () {
+        getLength: function() {
             return model.getLength();
         },
-        storeRect: function (n) {
+        storeRect: function(n) {
             model.setRect(n, view.getRects());
         },
         //   addRect: function() {
         //     view.addRect();
         //   },
-        showDownloadLink: function () {
+        showDownloadLink: function() {
             // to copy it completely
             var writeObject = JSON.parse(JSON.stringify(model.get()));
             delete writeObject.tags;
@@ -740,31 +750,27 @@ $(document).ready(function () {
                 encodeURIComponent(JSON.stringify(writeObject));
             view.showDownloadLink(url);
         },
-        resetDimensions: function () {
-            imgDimensions[0] = selectorImage.naturalWidth;
-            imgDimensions[1] = selectorImage.naturalHeight;
-        },
-        writeTagSet: function (tagSet) {
+        writeTagSet: function(tagSet) {
             model.writeTagSet(tagSet);
         },
-        getTagSet: function () {
+        getTagSet: function() {
             console.log(model.getTagSet());
             return model.getTagSet();
         },
-        tagsForImg: function (n) {
+        tagsForImg: function(n) {
             return model.get()[n].tags;
         },
-        rectsForImg: function (n) {
+        rectsForImg: function(n) {
             return model.get()[n].rects;
         },
-        tagStrings: function (ids) {
+        tagStrings: function(ids) {
             var strings = [];
-            ids.forEach(function (id) {
+            ids.forEach(function(id) {
                 strings.push(model.getTagString(id));
             });
             return strings;
         },
-        applyTagToThumbnail: function (tagElem, thumb) {
+        applyTagToThumbnail: function(tagElem, thumb) {
             var imgId = thumb.attr('data-imgid');
             var rectId = thumb.attr('data-rectid');
             var tagId = tagElem.attr('data-tagid');
