@@ -149,7 +149,6 @@ $(document).ready(function() {
                 this.bindEvents();
                 console.log('starting bufffer');
                 controller.startBuffer();
-                this.render();
                 this.initialized = true;
             }
         },
@@ -364,6 +363,7 @@ $(document).ready(function() {
             var _ = controller.getURL(dir);
             var path = _[1];
             var url = _[0];
+            console.log('url is '+url);
             $('#selectorImage').attr('src', url);
             $('#imageName').text(path);
             console.log('render');
@@ -586,8 +586,9 @@ $(document).ready(function() {
             for (var i = 0; i < this.fileWindow.length; i++) {
                 var file = this.fileWindow[i];
                 if (file) {
+                    console.log(i);
                     var fr = new FileReader();
-                    fr.onload = controller.addToMapGenerator(file);
+                    fr.onload = controller.addToMapGenerator(file, i === buffer);
                     fr.readAsDataURL(file);
                 } else {
                     controller.fileToUrlMap[null] = null;
@@ -596,16 +597,18 @@ $(document).ready(function() {
             this.bufferLoaded = true;
         },
         startBuffer: function() {
-            var path = model.getCurrentImage();
-            var n;
-            for (var i = 0, file = model.getFile(i); i < controller.imageCount; i++, file = model.getFile(i)) {
-                if (file.webkitRelativePath === path) {
-                    console.log(file.webkitRelativePath);
-                    n = i;
-                    break;
-                }
-            }
-            this.startBufferAt(n);
+            // var path = model.getCurrentImage();
+            // var n;
+            // for (var i = 0, file = model.getFile(i); i < controller.imageCount; i++, file = model.getFile(i)) {
+            //     if (file.webkitRelativePath === path) {
+            //         console.log(file.webkitRelativePath);
+            //         n = i;
+            //         break;
+            //     }
+            // }
+            // this.startBufferAt(n);
+            // Disable "start where you left off" functionality; needs to be thought through more
+            this.startBufferAt(0);
         },
         switchToHighlight: function() {
             var fileList = document.getElementById('files').files;
@@ -650,14 +653,19 @@ $(document).ready(function() {
             newView.init();
         },
         getURL: function(dir) {
-            var path = this.fileWindow[buffer + dir].webkitRelativePath;
-            return [this.fileToUrlMap[path],
+            var path = controller.fileWindow[buffer + dir].webkitRelativePath;
+            return [controller.fileToUrlMap[path],
                 path
             ];
         },
-        addToMapGenerator: function(file) {
+        addToMapGenerator: function(file, first) {
             return function(e) {
                 controller.fileToUrlMap[file.webkitRelativePath] = e.target.result;
+                console.log(file.webkitRelativePath);
+                if (first) {
+                    view.render(0);
+                    console.log('rendering view?!');
+                }
             };
         },
         dataGenerator: function(ctx) {
