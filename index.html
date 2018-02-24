@@ -2,33 +2,34 @@
 <html>
   <head>
     <link href="https://code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css" rel="stylesheet" type="text/css" />
-    <link rel="shortcut icon" type="image/png" href="/favicon.png">
-    <link rel="stylesheet" href="style.css">
     <script src="https://code.jquery.com/jquery-1.11.3.js"></script>
     <script src="https://code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
-    <script src="script.js"></script>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">
-    <title>Image boxer</title>
+    <title>JS Bin</title>
 
   </head>
   <body>
     <filepicking-panel>
       <form id="dirSelectorForm">
         <p>
-          <label for="files" class="btn btn-default">Choose image directory</label>
+          <label for="files" class="btn btn-default">Choose image directory (required)</label>
           <span id="files-filecount"></span>
           <input id="files" type="file" webkitdirectory directory multiple name="dir">
         </p>
         <p>
-          <label for="json-selector" class="btn btn-default">Choose tag data file</label>
+          <label for="json-selector" class="btn btn-default">Choose existing tag data file (optional)</label>
           <span id="json-selector-filecount"></span>
           <input id="json-selector" type="file">
         </p>
         <p>
-          <input type="submit" class="btn btn-primary" value="Submit">
+          <input type="submit" class="btn btn-primary" value="Begin tagging">
         </p>
       </form>
+      <ol>
+<li>Put all input images under a single directory. Must contain image files only, but subdirectories are allowed.<br></li>
+<li>Create a .labels file somewhere within this directory. This is a newline separated list of tags that may be applied to different sections of the images.<br></li>
+</ol>
     </filepicking-panel>
     <highlighting-panel>
       <figure>
