@@ -10,3 +10,32 @@ This is a system to add "tags" to certain regions of input images, then output t
 3. Go to http://millanp.github.io/imgboxer to use the tool. If you want to download it for offline use, clone this repository to your machine and open index.html in Chrome.<br>
 4. When you come to a stopping point, return to the boxing view and click "Get download link". A link will appear that will allow you to download a file named data.json that contains all of the information about the tagged regions.<br>
 5. If you want to pick up where you left off, make sure to select your previously generated data.json using the "Choose tag data file" button when you open up the tool again.<br>
+
+**Data file format**<br>
+See https://github.com/millanp/imgboxer/blob/master/example_data.json for an example data.json file.
+
+The format is as follows:
+
+```
+{
+  "0": {
+    "name": "<filename of first image>",
+    "rects": [
+      {
+        "top": <pixels from top of image to top of rectangle>,
+        "left": <pixels from left side of image to left side of rectangle>,
+        "width": <width in pixels of rectangle>,
+        "height": <height in pixels of rectangle>,
+        "tag": <tag applied to rectangle; for example, "Cat" or "Dog">
+      },
+      ... repeated for each rectangle drawn over the first image
+    ]
+  },
+  ...
+  "<number of images - 1>": {
+    ...
+  },
+  "imageCount": <number of images in the selected directory>
+  "currentImage": "<filename of the image that was displayed when the download button was clicked, for purposes of picking up where you left off>"
+}
+```
