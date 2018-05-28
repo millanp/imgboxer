@@ -1,1 +1,62 @@
-{"0":{"name":"Pictures/r.png","rects":[{"top":47,"left":172,"width":342,"height":290,"tag":"Glasses"}]},"1":{"name":"Pictures/microsoftfaq.png","rects":[{"top":116,"left":164,"width":117,"height":36,"tag":"Mouth"},{"top":75,"left":368,"width":85,"height":86,"tag":"Glasses"}]},"2":{"name":"Pictures/powerschoollogo.png"},"3":{"name":"Pictures/NScrape.png"},"4":{"name":"Pictures/1466740790_arrow-down.svg"},"5":{"name":"Pictures/image.png"},"6":{"name":"Pictures/drawing.png"},"7":{"name":"Pictures/searchterm.png"},"8":{"name":"Pictures/drawing.svg"},"9":{"name":"Pictures/troll-high.png"},"10":{"name":"Pictures/troll.gif"},"imageCount":11,"currentImage":"Pictures/microsoftfaq.png"}
+{
+  "0": {
+    "name": "Pictures\/r.png",
+    "rects": [
+      {
+        "top": 47,
+        "left": 172,
+        "width": 342,
+        "height": 290,
+        "tag": "Glasses"
+      }
+    ]
+  },
+  "1": {
+    "name": "Pictures\/microsoftfaq.png",
+    "rects": [
+      {
+        "top": 116,
+        "left": 164,
+        "width": 117,
+        "height": 36,
+        "tag": "Mouth"
+      },
+      {
+        "top": 75,
+        "left": 368,
+        "width": 85,
+        "height": 86,
+        "tag": "Glasses"
+      }
+    ]
+  },
+  "2": {
+    "name": "Pictures\/powerschoollogo.png"
+  },
+  "3": {
+    "name": "Pictures\/NScrape.png"
+  },
+  "4": {
+    "name": "Pictures\/1466740790_arrow-down.svg"
+  },
+  "5": {
+    "name": "Pictures\/image.png"
+  },
+  "6": {
+    "name": "Pictures\/drawing.png"
+  },
+  "7": {
+    "name": "Pictures\/searchterm.png"
+  },
+  "8": {
+    "name": "Pictures\/drawing.svg"
+  },
+  "9": {
+    "name": "Pictures\/troll-high.png"
+  },
+  "10": {
+    "name": "Pictures\/troll.gif"
+  },
+  "imageCount": 11,
+  "currentImage": "Pictures\/microsoftfaq.png"
+}
