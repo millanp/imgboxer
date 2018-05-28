@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
-  <head>
+
+<head>
     <link href="https://code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css" rel="stylesheet" type="text/css" />
     <script src="https://code.jquery.com/jquery-1.11.3.js"></script>
     <script src="https://code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
@@ -11,89 +12,91 @@
     <script src="script.js"></script>
     <title>JS Bin</title>
 
-  </head>
-  <body>
+</head>
+
+<body>
     <filepicking-panel>
-      <form id="dirSelectorForm">
-        <p>
-          <label for="files" class="btn btn-default">Choose image directory (required)</label>
-          <span id="files-filecount"></span>
-          <input id="files" type="file" webkitdirectory directory multiple name="dir">
-        </p>
-        <p>
-          <label for="json-selector" class="btn btn-default">Choose existing tag data file (optional)</label>
-          <span id="json-selector-filecount"></span>
-          <input id="json-selector" type="file">
-        </p>
-        <p>
-          <input type="submit" class="btn btn-primary" value="Begin tagging">
-        </p>
-      </form>
-      <ol>
-<li>Put all input images under a single directory. Must contain image files only, but subdirectories are allowed.<br></li>
-<li>Create a .labels file somewhere within this directory. This is a newline separated list of tags that may be applied to different sections of the images.<br></li>
-</ol>
+        <form id="dirSelectorForm">
+            <p>
+                <label for="files" class="btn btn-default">Choose image directory (required)</label>
+                <span id="files-filecount"></span>
+                <input id="files" type="file" webkitdirectory directory multiple name="dir">
+            </p>
+            <p>
+                <label for="json-selector" class="btn btn-default">Choose existing tag data file (optional)</label>
+                <span id="json-selector-filecount"></span>
+                <input id="json-selector" type="file">
+            </p>
+            <p>
+                <input type="submit" class="btn btn-primary" value="Begin tagging">
+            </p>
+        </form>
+        <ol>
+            <li>Put all input images under a single directory. Must contain image files only, but subdirectories are allowed.<br></li>
+            <li>Create a .labels file somewhere within this directory. This is a newline separated list of tags that may be applied to different sections of the images.<br></li>
+        </ol>
     </filepicking-panel>
     <highlighting-panel>
-      <figure>
-        <img src="http://placehold.it/600x600" id="selectorImage">  
-        <figcaption id="imageName"></figcaption>
-      </figure>
-      <p>
-        <button id="prevButton" class="btn btn-default">Previous</button>
-        <button id="nextButton" class="btn btn-default">Next</button>
-      </p>
-      <p>
-        <button id="getDownloadLink" class="btn btn-success">
+        <figure>
+            <img src="http://placehold.it/600x600" id="selectorImage" class="dragsurface">
+            <figcaption id="imageName"></figcaption>
+        </figure>
+        <p>
+            <button id="prevButton" class="btn btn-default">Previous</button>
+            <button id="nextButton" class="btn btn-default">Next</button>
+        </p>
+        <p>
+            <button id="getDownloadLink" class="btn btn-success">
           Download data
         </button>
-        <a id="downloadLink" download="data.json">
+            <a id="downloadLink" download="data.json">
           Click here
         </a>
-      </p>
-      <p>
-        <button id="classifyButton" class="btn btn-primary">
+        </p>
+        <p>
+            <button id="classifyButton" class="btn btn-primary">
           Go to tagging view
         </button>
-      </p>
-      <div class="instructions">
-        <p>
-          U = Previous image
         </p>
-        <p>
-          I = Next image
-        </p>
-        <p>
-          O = Shrink selection
-        </p>
-        <p>
-          P = Grow selection
-        </p>
-        <p>
-          Double click on a rectangle to delete it
-        </p>
-        <canvas id="cropper"></canvas>
+        <div class="instructions">
+            <p>
+                U = Previous image
+            </p>
+            <p>
+                I = Next image
+            </p>
+            <p>
+                O = Shrink selection
+            </p>
+            <p>
+                P = Grow selection
+            </p>
+            <p>
+                Double click on a rectangle to delete it
+            </p>
+            <canvas id="cropper"></canvas>
 
-      </div>
+        </div>
     </highlighting-panel>
     <classify-panel>
-      <div class="selection-widget">
-        <div class="image-grid">
+        <div class="selection-widget">
+            <div class="image-grid">
+
+            </div>
+            <div class="tags">
+                <div class="tag-list btn-group-vertical" role="group" aria="...">
+                    Tags here
+                </div>
+            </div>
 
         </div>
-        <div class="tags">
-          <div class="tag-list btn-group-vertical" role="group" aria="...">
-            Tags here
-          </div>
-        </div>
-
-      </div>
-      <div class="lower-area">
-        <button id="boxButton" class="btn btn-primary">
+        <div class="lower-area">
+            <button id="boxButton" class="btn btn-primary">
           Go to boxing view
         </button>
-      </div>
+        </div>
 
     </classify-panel>
-  </body>
+</body>
+
 </html>

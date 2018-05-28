@@ -35,8 +35,7 @@ $(document).ready(function() {
         tags: [],
         pathToFileMap: {},
         loadedSoFar: 0,
-        init: function() {
-        },
+        init: function() {},
         get: function() {
             return this.data;
         },
@@ -186,17 +185,20 @@ $(document).ready(function() {
                 // controller.showDownloadLink();
                 controller.triggerDownload();
             });
+            $('#selectorImage').on('dragstart', function(event) { event.preventDefault(); });
             $('#selectorImage').click(function(event) {
+                console.log('image click');
                 if (view.drag) {
                     view.drag = false;
-                } else {
+                } else if (event.shiftKey) {
                     view.addRectCenteredAt(event.pageX, event.pageY, defaultSquareRadius);
                 }
             });
             $('#selectorImage').mousedown(function(event) {
-                view.rect.x = event.pageX; view.rect.y = event.pageY;
+                view.rect.x = event.pageX;
+                view.rect.y = event.pageY;
                 view.drag = true;
-                view.rect.elem = $('<div id="dragger"></div>');
+                view.rect.elem = $('<div class="dragsurface selection-square"></div>');
                 view.rect.elem.css({
                     'position': 'absolute',
                     'width': 0,
@@ -206,50 +208,62 @@ $(document).ready(function() {
                     'border': '1px solid black'
                 });
                 $('highlighting-panel').prepend(view.rect.elem);
+                view.applyRectModifiers();
             });
-            $(window).mousemove(function(event) {
-                if (view.drag) {
-                    view.rect.width = event.pageX - view.rect.x;
-                    view.rect.height = event.pageY - view.rect.y;
-                    var newWidth = view.rect.width;
-                    var newHeight = view.rect.height;
-                    var newX = view.rect.x;
-                    var newY = view.rect.y;
-                    if (view.rect.width < 0) {
-                        newX += view.rect.width;
-                        newWidth *= -1; 
-                    }
-                    if (view.rect.height < 0) {
-                        newY += view.rect.height;
-                        newHeight *= -1;
-                    }
-                    view.rect.elem.css({
-                        'width': newWidth,
-                        'height': newHeight,
-                        'top': newY,
-                        'left': newX
-                    });
-                }
-            });
-            $(window).mouseup(function(event) {
-                if (view.drag) {
-                    // drag will be set to false within the click handler
-                    view.rect.elem.remove();
-                    var newWidth = view.rect.width;
-                    var newHeight = view.rect.height;
-                    var newX = view.rect.x;
-                    var newY = view.rect.y;
-                    if (view.rect.width < 0) {
-                        newX += view.rect.width;
-                        newWidth *= -1; 
-                    }
-                    if (view.rect.height < 0) {
-                        newY += view.rect.height;
-                        newHeight *= -1;
-                    }
-                    view.drawAndFocusRect(newX, newY, newWidth, newHeight);
-                }
-            });
+
+            // function refreshDragSurfaceEvents() {
+            //     $('.dragsurface').off('mousemove');
+            //     $('.dragsurface').off('mouseup');
+            //     $('.dragsurface').mousemove(function(event) {
+            //         if (view.drag) {
+            //             view.rect.width = event.pageX - view.rect.x;
+            //             view.rect.height = event.pageY - view.rect.y;
+            //             var newWidth = view.rect.width;
+            //             var newHeight = view.rect.height;
+            //             var newX = view.rect.x;
+            //             var newY = view.rect.y;
+            //             if (view.rect.width < 0) {
+            //                 newX += view.rect.width;
+            //                 newWidth *= -1;
+            //             }
+            //             if (view.rect.height < 0) {
+            //                 newY += view.rect.height;
+            //                 newHeight *= -1;
+            //             }
+            //             view.rect.elem.css({
+            //                 'width': newWidth,
+            //                 'height': newHeight,
+            //                 'top': newY,
+            //                 'left': newX
+            //             });
+            //         }
+            //     });
+            //     // TODO make ending the drag above a selection square work
+            //     $('.dragsurface').mouseup(function(event) {
+            //         if (view.drag) {
+            //             console.log('mouseup');
+            //             // drag will be set to false within the click handler
+            //             $('.dragger').remove();
+            //             var newWidth = view.rect.width;
+            //             var newHeight = view.rect.height;
+            //             var newX = view.rect.x;
+            //             var newY = view.rect.y;
+            //             if (view.rect.width < 0) {
+            //                 newX += view.rect.width;
+            //                 newWidth *= -1;
+            //             }
+            //             if (view.rect.height < 0) {
+            //                 newY += view.rect.height;
+            //                 newHeight *= -1;
+            //             }
+            //             view.drawAndFocusRect(newX, newY, newWidth, newHeight);
+            //             refreshDragSurfaceEvents();
+            //         }
+            //     });
+            // }
+
+            // refreshDragSurfaceEvents();
+
             $(document).keydown(function(event) {
                 function subtractRadius(ind, val) {
                     return parseFloat(val) - radiusResizeIncrement;
@@ -408,7 +422,8 @@ $(document).ready(function() {
             view.drawAndFocusRect(trueLeft, trueTop, trueWidth, trueHeight);
         },
         drawAndFocusRect: function(x, y, width, height) {
-            var toPrepend = $('<div class="selection-square"></div>');
+            console.log('draw');
+            var toPrepend = $('<div class="selection-square dragsurface"></div>');
             toPrepend.css({
                 'width': width,
                 'height': height,
@@ -492,6 +507,59 @@ $(document).ready(function() {
                 this.remove();
             });
             $('.selection-square').attr('tabindex', '-1');
+            $('.dragsurface').off('mousemove');
+            $('.dragsurface').off('mouseup');
+            $('.dragsurface').mousemove(function(event) {
+                if (view.drag) {
+                    view.rect.width = event.pageX - view.rect.x;
+                    view.rect.height = event.pageY - view.rect.y;
+                    var newWidth = view.rect.width;
+                    var newHeight = view.rect.height;
+                    var newX = view.rect.x;
+                    var newY = view.rect.y;
+                    if (view.rect.width < 0) {
+                        newX += view.rect.width;
+                        newWidth *= -1;
+                    }
+                    if (view.rect.height < 0) {
+                        newY += view.rect.height;
+                        newHeight *= -1;
+                    }
+                    view.rect.elem.css({
+                        'width': newWidth,
+                        'height': newHeight,
+                        'top': newY,
+                        'left': newX
+                    });
+                }
+            });
+            // TODO make ending the drag above a selection square work
+            $('.dragsurface').mouseup(function(event) {
+                if (view.drag) {
+                    view.drag = false;
+                    event.stopPropagation();
+                    // drag will be set to false within the click handler
+                    // $('.dragger').remove();
+                    // var newWidth = view.rect.width;
+                    // var newHeight = view.rect.height;
+                    // var newX = view.rect.x;
+                    // var newY = view.rect.y;
+                    // if (view.rect.width < 0) {
+                    //     newX += view.rect.width;
+                    //     newWidth *= -1;
+                    // }
+                    // if (view.rect.height < 0) {
+                    //     newY += view.rect.height;
+                    //     newHeight *= -1;
+                    // }
+                    // view.drawAndFocusRect(newX, newY, newWidth, newHeight);
+                    // refreshDragSurfaceEvents();
+                }
+            });
+            $('.dragsurface').click(function(event) {
+                console.log('surface click');
+                view.drag = false;
+            });
         },
         resetAllRects: function(noAdd) {
             $('.selection-square').each(function(index) {
