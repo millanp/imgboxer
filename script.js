@@ -36,7 +36,6 @@ $(document).ready(function() {
         pathToFileMap: {},
         loadedSoFar: 0,
         init: function() {
-            console.log(model.loadedSoFar);
         },
         get: function() {
             return this.data;
@@ -141,13 +140,14 @@ $(document).ready(function() {
     var highlightView = {
         currImage: 0,
         initialized: false,
+        dragging: false,
+        rect: {},
         panel: $('highlighting-panel'),
         init: function() {
             this.panel.css('display', 'block');
             view.applyRectModifiers();
             if (!controller.bufferLoaded) {
                 this.bindEvents();
-                console.log('starting bufffer');
                 controller.startBuffer();
                 this.initialized = true;
             }
@@ -183,10 +183,72 @@ $(document).ready(function() {
                 controller.addRect();
             });
             $('#getDownloadLink').click(function(event) {
-                controller.showDownloadLink();
+                // controller.showDownloadLink();
+                controller.triggerDownload();
             });
             $('#selectorImage').click(function(event) {
-                view.addRectCenteredAt(event.pageX, event.pageY, defaultSquareRadius);
+                if (view.drag) {
+                    view.drag = false;
+                } else {
+                    view.addRectCenteredAt(event.pageX, event.pageY, defaultSquareRadius);
+                }
+            });
+            $('#selectorImage').mousedown(function(event) {
+                view.rect.x = event.pageX; view.rect.y = event.pageY;
+                view.drag = true;
+                view.rect.elem = $('<div id="dragger"></div>');
+                view.rect.elem.css({
+                    'position': 'absolute',
+                    'width': 0,
+                    'height': 0,
+                    'top': view.rect.y,
+                    'left': view.rect.x,
+                    'border': '1px solid black'
+                });
+                $('highlighting-panel').prepend(view.rect.elem);
+            });
+            $(window).mousemove(function(event) {
+                if (view.drag) {
+                    view.rect.width = event.pageX - view.rect.x;
+                    view.rect.height = event.pageY - view.rect.y;
+                    var newWidth = view.rect.width;
+                    var newHeight = view.rect.height;
+                    var newX = view.rect.x;
+                    var newY = view.rect.y;
+                    if (view.rect.width < 0) {
+                        newX += view.rect.width;
+                        newWidth *= -1; 
+                    }
+                    if (view.rect.height < 0) {
+                        newY += view.rect.height;
+                        newHeight *= -1;
+                    }
+                    view.rect.elem.css({
+                        'width': newWidth,
+                        'height': newHeight,
+                        'top': newY,
+                        'left': newX
+                    });
+                }
+            });
+            $(window).mouseup(function(event) {
+                if (view.drag) {
+                    // drag will be set to false within the click handler
+                    view.rect.elem.remove();
+                    var newWidth = view.rect.width;
+                    var newHeight = view.rect.height;
+                    var newX = view.rect.x;
+                    var newY = view.rect.y;
+                    if (view.rect.width < 0) {
+                        newX += view.rect.width;
+                        newWidth *= -1; 
+                    }
+                    if (view.rect.height < 0) {
+                        newY += view.rect.height;
+                        newHeight *= -1;
+                    }
+                    view.drawAndFocusRect(newX, newY, newWidth, newHeight);
+                }
             });
             $(document).keydown(function(event) {
                 function subtractRadius(ind, val) {
@@ -291,6 +353,12 @@ $(document).ready(function() {
             cv.drawImage(img, rect.left, rect.top, rect.width, rect.height, 0, 0, cvv.width, cvv.height);
             return cvv.toDataURL();
         },
+        triggerDownload: function(url) {
+            var dl = document.createElement('a');
+            dl.download = "data.json";
+            dl.href = url;
+            dl.click();
+        },
         getRects: function() {
             var $sqs = $('.selection-square');
             var rects = [];
@@ -330,7 +398,6 @@ $(document).ready(function() {
                     });
                     panel.prepend(newRect);
                 }
-            console.log('initImgWithName');
             view.applyRectModifiers();
         },
         addRectCenteredAt: function(x, y, radius) {
@@ -352,7 +419,6 @@ $(document).ready(function() {
             setTimeout(function() {
                 toPrepend.get(0).focus();
             }, 10);
-            console.log('fous');
             view.applyRectModifiers();
         },
         showDownloadLink: function(url) {
@@ -363,17 +429,14 @@ $(document).ready(function() {
             var _ = controller.getURL(dir);
             var path = _[1];
             var url = _[0];
-            console.log('url is '+url);
             $('#selectorImage').attr('src', url);
             $('#imageName').text(path);
-            console.log('render');
             view.setRects();
         },
         rx: function(x) {
             return x - selectorImage.offsetLeft;
         },
         ry: function(y) {
-            console.log('using scrollTop');
             return y - selectorImage.offsetTop;
         },
         trueX: function(x) {
@@ -442,7 +505,6 @@ $(document).ready(function() {
         panel: $('classify-panel'),
         init: function() {
             this.panel.css('display', 'block');
-            console.log('rendering');
             this.render();
             this.applyModifiers();
             this.applyEventHandlers();
@@ -455,7 +517,6 @@ $(document).ready(function() {
             var grid = $('.image-grid');
             grid.empty();
             for (var n = 0; n < controller.getLength(); n++) {
-                console.log('imaging');
                 if (controller.rectsForImg(n))
                     for (var i = 0, rects = controller.rectsForImg(n); i < rects.length; i++) {
                         if (rects[i].url) {
@@ -525,7 +586,6 @@ $(document).ready(function() {
                 controller.switchToView(highlightView);
             });
             $(document).keypress(function(event) {
-                console.log('key press');
                 var number = String.fromCharCode(event.which);
                 view.getBtn(number - 1).click();
             });
@@ -586,7 +646,6 @@ $(document).ready(function() {
             for (var i = 0; i < this.fileWindow.length; i++) {
                 var file = this.fileWindow[i];
                 if (file) {
-                    console.log(i);
                     var fr = new FileReader();
                     fr.onload = controller.addToMapGenerator(file, i === buffer);
                     fr.readAsDataURL(file);
@@ -661,10 +720,8 @@ $(document).ready(function() {
         addToMapGenerator: function(file, first) {
             return function(e) {
                 controller.fileToUrlMap[file.webkitRelativePath] = e.target.result;
-                console.log(file.webkitRelativePath);
                 if (first) {
                     view.render(0);
-                    console.log('rendering view?!');
                 }
             };
         },
@@ -672,7 +729,6 @@ $(document).ready(function() {
             return function(e) {
                 var newData = JSON.parse(e.target.result);
                 model.set(newData);
-                console.log(model.get());
                 controller.switchToView(highlightView);
             };
         },
@@ -736,7 +792,7 @@ $(document).ready(function() {
         //   addRect: function() {
         //     view.addRect();
         //   },
-        showDownloadLink: function() {
+        triggerDownload: function() {
             // to copy it completely
             var writeObject = JSON.parse(JSON.stringify(model.get()));
             delete writeObject.tags;
@@ -756,13 +812,12 @@ $(document).ready(function() {
             }
             var url = 'data:application/json,' +
                 encodeURIComponent(JSON.stringify(writeObject));
-            view.showDownloadLink(url);
+            view.triggerDownload(url);
         },
         writeTagSet: function(tagSet) {
             model.writeTagSet(tagSet);
         },
         getTagSet: function() {
-            console.log(model.getTagSet());
             return model.getTagSet();
         },
         tagsForImg: function(n) {
