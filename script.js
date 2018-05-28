@@ -22,7 +22,11 @@ $(document).ready(function() {
                 name: webkitRelativePath,
                 rects: [
                     {
-                        "top": 
+                        "top": x,
+                        "left": x,
+                        "width": x,
+                        "height" x,
+                        "tag": x
                     }
                 ]
             }
@@ -145,6 +149,7 @@ $(document).ready(function() {
         init: function() {
             this.panel.css('display', 'block');
             view.applyRectModifiers();
+            view.setRects();
             if (!controller.bufferLoaded) {
                 this.bindEvents();
                 controller.startBuffer();
@@ -163,7 +168,7 @@ $(document).ready(function() {
                 }
             });
             $(window).resize(function() {
-                view.setRects();
+                highlightView.setRects();
             });
             $('#prevButton').click(function(event) {
                 controller.storeRect(view.currImage);
@@ -385,7 +390,8 @@ $(document).ready(function() {
                     top: view.scaledToRealY(pos.top),
                     left: view.scaledToRealX(pos.left),
                     width: view.scaledToRealX(parseFloat($sq.css('width'))),
-                    height: view.scaledToRealY(parseFloat($sq.css('height')))
+                    height: view.scaledToRealY(parseFloat($sq.css('height'))),
+                    tag: $sq.text(),
                 };
                 rect.url = view.dataUrlOfCrop(rect);
                 rect.realWidth = parseFloat($sq.css('width'));
@@ -410,6 +416,8 @@ $(document).ready(function() {
                         'top': view.storedToTrueY(rect.top),
                         'left': view.storedToTrueX(rect.left)
                     });
+                    newRect.text(imgObj.rects[i].tag);
+                    console.log('set text to ' + imgObj.rects[i].tag);
                     panel.prepend(newRect);
                 }
             view.applyRectModifiers();
@@ -533,27 +541,10 @@ $(document).ready(function() {
                     });
                 }
             });
-            // TODO make ending the drag above a selection square work
             $('.dragsurface').mouseup(function(event) {
                 if (view.drag) {
                     view.drag = false;
                     event.stopPropagation();
-                    // drag will be set to false within the click handler
-                    // $('.dragger').remove();
-                    // var newWidth = view.rect.width;
-                    // var newHeight = view.rect.height;
-                    // var newX = view.rect.x;
-                    // var newY = view.rect.y;
-                    // if (view.rect.width < 0) {
-                    //     newX += view.rect.width;
-                    //     newWidth *= -1;
-                    // }
-                    // if (view.rect.height < 0) {
-                    //     newY += view.rect.height;
-                    //     newHeight *= -1;
-                    // }
-                    // view.drawAndFocusRect(newX, newY, newWidth, newHeight);
-                    // refreshDragSurfaceEvents();
                 }
             });
             $('.dragsurface').click(function(event) {
@@ -586,14 +577,14 @@ $(document).ready(function() {
             grid.empty();
             for (var n = 0; n < controller.getLength(); n++) {
                 if (controller.rectsForImg(n))
-                    for (var i = 0, rects = controller.rectsForImg(n); i < rects.length; i++) {
+                    for (var i = 0, rects = controller.rectsForImg(n); i < rects.length && !rects[i].tag; i++) {
                         if (rects[i].url) {
                             var thumbnail = $('<div class="thumbnail" data-tooltip="No tags set"></div>');
                             thumbnail.attr('data-imgid', n);
                             thumbnail.attr('data-rectid', i);
                             thumbnail.css({
-                                'height': rects[i].realHeight * 2,
-                                'width': rects[i].realWidth * 2
+                                'height': 100,
+                                'width': rects[i].realWidth * (100 / rects[i].realHeight)
                             });
                             grid.append(thumbnail);
                             thumbnail.css('background-image', u.cssURL(rects[i].url));

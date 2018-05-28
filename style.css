@@ -1,86 +1,116 @@
 @import url(https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css);
 input[type=file] {
-  display: none;
+    display: none;
 }
+
 canvas {
-  display: none;
+    display: none;
 }
+
 .selection-square {
-  width: 30px;
-  height: 30px;
-  border: 1px solid;
-  position: absolute;
-  background-color: rgba(255, 0, 0, 0.3);
-  z-index: 0;
-/*   background-image: url(http://pre08.deviantart.net/4c4b/th/pre/f/2011/094/d/a/drawing_grid_by_blossomhillstables-d3d70y5.png);
+    width: 30px;
+    height: 30px;
+    border: 1px solid;
+    position: absolute;
+    background-color: rgba(255, 0, 0, 0.3);
+    z-index: 0;
+    -webkit-text-stroke-color: white;
+    -webkit-text-stroke-width: 1px;
+    font-weight: 1000;
+    font-size: large;
+    cursor: default;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    /*   background-image: url(http://pre08.deviantart.net/4c4b/th/pre/f/2011/094/d/a/drawing_grid_by_blossomhillstables-d3d70y5.png);
   background-repeat: repeat;
   background-size: 519px 384.5px; */
 }
-.selection-square:focus, .selection-square:active {
-  outline: none;
-  z-index: 1;
-}
-.selection-square:focus {
-  background-color: rgba(0, 255, 0, 0.3);
-}
+
+.selection-square:focus,
 .selection-square:active {
-  background-color: rgba(255, 165, 0, 0.3);
+    outline: none;
+    z-index: 1;
 }
+
+.selection-square:focus {
+    background-color: rgba(0, 255, 0, 0.3);
+}
+
+.selection-square:active {
+    background-color: rgba(255, 165, 0, 0.3);
+}
+
 #selectorImage {
-  max-height: 75vh;
+    max-height: 75vh;
 }
+
 
 /* .selection-square::before {
   content: "✘";
   margin-top: -1em;
   position: absolute;
 } */
+
 #downloadLink {
-  display: none;
+    display: none;
 }
+
 highlighting-panel {
-  margin: 10px;
+    margin: 10px;
 }
+
 classify-panel {
-  margin: 10px;
+    margin: 10px;
 }
+
 .image-grid {
-  display: flex;
-  flex-wrap: wrap;
-  flex-grow: 7;
+    display: flex;
+    flex-wrap: wrap;
+    flex-grow: 7;
 }
+
 .tags {
-  flex-grow: 3;
-  margin-left: auto;
+    flex-grow: 3;
+    margin-left: auto;
 }
+
 .tag-list {
-  width: 100%;
+    width: 100%;
 }
+
 .btn:focus {
-  outline: none;
+    outline: none;
 }
+
 .tag-btn {
-  color: #eeeeee;
+    color: #eeeeee;
 }
+
 .selection-widget {
-  display: flex;
+    display: flex;
 }
+
 .thumbnail {
-  height: 100px;
-  width: 100px;
-  background-size: cover;
-  border: 3px solid white;
-  transition: all 0.25s;
+    height: 100px;
+    width: 100px;
+    background-size: cover;
+    border: 3px solid white;
+    transition: all 0.25s;
 }
+
 .thumbnail.ui-selected {
-  border: 3px solid blue;
+    border: 3px solid blue;
 }
+
 .thumbnail.ui-selecting {
-  border: 3px solid orange;
+    border: 3px solid orange;
 }
+
 filepicking-panel {
-  padding: 10px;
+    padding: 10px;
 }
-highlighting-panel, classify-panel {
-  display: none;
+
+highlighting-panel,
+classify-panel {
+    display: none;
 }
