@@ -187,7 +187,7 @@ $(document).ready(function() {
                 controller.addRect();
             });
             $('#getDownloadLink').click(function(event) {
-                // controller.showDownloadLink();
+                controller.storeRect(view.currImage);
                 controller.triggerDownload();
             });
             $('#selectorImage').on('dragstart', function(event) { event.preventDefault(); });
@@ -864,6 +864,8 @@ $(document).ready(function() {
                             delete writeObject[n].rects;
                         for (var j in img.rects) {
                             delete img.rects[j].url;
+                            delete img.rects[j].realWidth;
+                            delete img.rects[j].realHeight;
                         }
                     }
                     delete writeObject[n].url;
