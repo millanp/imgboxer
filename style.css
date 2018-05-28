@@ -17,7 +17,7 @@ canvas {
     -webkit-text-stroke-color: white;
     -webkit-text-stroke-width: 1px;
     font-weight: 1000;
-    font-size: large;
+    font-size: 20px;
     cursor: default;
     overflow: hidden;
     text-overflow: ellipsis;
