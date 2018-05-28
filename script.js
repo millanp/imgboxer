@@ -159,7 +159,6 @@ $(document).ready(function() {
         bindEvents: function() {
             $('#nextButton').click(function(event) {
                 controller.storeRect(view.currImage);
-                view.resetAllRects(true);
                 if (view.currImage + 1 < controller.getLength()) {
                     view.currImage++;
                     controller.shiftCurrentImage(1);
